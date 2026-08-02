@@ -1,5 +1,4 @@
-const API =
-  import.meta.env.VITE_API_URL || "https://url-shortner-3k6y.onrender.com/api";
+const API = import.meta.env.VITE_API_URL;
 
 async function request(path, { method = "GET", body, token } = {}) {
   const headers = {};
