@@ -8,79 +8,6 @@ const redisClient = require("../config/redis");
 
 const QRCode = require("qrcode");
 
-const createShortUrl = async(req,res)=>{
-
-    try{
-
-        const{
-
-            originalUrl
-
-        }=req.body;
-
-        if(!originalUrl){
-
-            return res.status(400).json({
-
-                message:"URL is required"
-
-            });
-
-        }
-
-        if(!validator.isURL(originalUrl)){
-
-            return res.status(400).json({
-
-                message:"Invalid URL"
-
-            });
-
-        }
-
-        const shortCode = generateShortCode();
-
-        const url = await Url.create({
-
-            originalUrl,
-
-            shortCode,
-
-            createdBy:req.user.id
-
-        });
-
-        res.status(201).json({
-
-            success:true,
-
-            message:"Short URL Created",
-
-            data:{
-
-                originalUrl:url.originalUrl,
-
-                shortCode:url.shortCode,
-
-                shortUrl:`http://localhost:5173/${url.shortCode}`
-
-            }
-
-        });
-
-    }
-
-    catch(error){
-
-        res.status(500).json({
-
-            message:error.message
-
-        });
-
-    }
-
-};
 const createShortUrl = async (req, res) => {
 
     try {
@@ -216,11 +143,11 @@ const updateUrl = async(req,res)=>{
 
 try{
 
-const { id } = req.params;
+const { shortCode } = req.params;
 
 const { originalUrl } = req.body;
 
-const url = await Url.findById(id);
+const url = await Url.findOne({ shortCode });
 
 if(!url){
 
@@ -300,9 +227,9 @@ const deleteUrl = async(req,res)=>{
 
 try{
 
-const { id } = req.params;
+const { shortCode } = req.params;
 
-const url = await Url.findById(id);
+const url = await Url.findOne({ shortCode });
 
 if(!url){
 
@@ -494,6 +421,81 @@ const getQrCode = async (req, res) => {
 
             message: error.message
 
+        });
+
+    }
+
+};
+
+const redirectUrl = async (req, res) => {
+
+    try {
+
+        const { shortCode } = req.params;
+
+        const cached = await redisClient.get(shortCode);
+
+        if (cached) {
+
+            const cachedUrl = JSON.parse(cached);
+
+            await Url.updateOne(
+                { shortCode },
+                { $inc: { clicks: 1 } }
+            );
+
+            return res.redirect(cachedUrl.originalUrl);
+
+        }
+
+        const url = await Url.findOne({
+            shortCode
+        });
+
+        if (!url) {
+
+            return res.status(404).json({
+                message: "URL not found"
+            });
+
+        }
+
+        if (!url.isActive) {
+
+            return res.status(403).json({
+                message: "URL is inactive"
+            });
+
+        }
+
+        if (url.expiresAt && new Date(url.expiresAt) < new Date()) {
+
+            return res.status(410).json({
+                message: "URL has expired"
+            });
+
+        }
+
+        await redisClient.set(
+            shortCode,
+            JSON.stringify({
+                originalUrl: url.originalUrl
+            })
+        );
+
+        await Url.updateOne(
+            { shortCode },
+            { $inc: { clicks: 1 } }
+        );
+
+        res.redirect(url.originalUrl);
+
+    }
+
+    catch (error) {
+
+        res.status(500).json({
+            message: error.message
         });
 
     }

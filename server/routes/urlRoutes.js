@@ -33,14 +33,6 @@ router.post(
     createShortUrl
 );
 
-router.get(
-    "/:shortCode",
-    redirectLimiter,
-    redirectUrl
-);
-
-router.post("/", auth, createUrlLimiter, createShortUrl);
-
 router.get("/my-urls", auth, getMyUrls);
 
 router.put("/:shortCode", auth, updateUrl);
@@ -51,6 +43,10 @@ router.get("/:shortCode/analytics", auth, getAnalytics);
 
 router.get("/:shortCode/qr", auth, getQrCode);
 
-router.get("/:shortCode", redirectLimiter, redirectUrl);
+router.get(
+    "/:shortCode",
+    redirectLimiter,
+    redirectUrl
+);
 
 module.exports = router;
