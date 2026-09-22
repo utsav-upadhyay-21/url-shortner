@@ -4,21 +4,14 @@ const router = express.Router();
 
 const auth = require("../middleware/auth");
 const {
-
     createShortUrl,
-
     redirectUrl,
-
     getMyUrls,
-
     updateUrl,
-
     deleteUrl,
-
     getAnalytics,
-
-    getQrCode
-
+    getQrCode,
+    toggleAnalytics
 } = require("../controllers/urlController");
 
 const {
@@ -40,6 +33,8 @@ router.put("/:shortCode", auth, updateUrl);
 router.delete("/:shortCode", auth, deleteUrl);
 
 router.get("/:shortCode/analytics", auth, getAnalytics);
+
+router.patch("/:shortCode/analytics", auth, toggleAnalytics);
 
 router.get("/:shortCode/qr", auth, getQrCode);
 

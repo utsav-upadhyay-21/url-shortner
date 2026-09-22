@@ -37,6 +37,11 @@ const urlSchema = new mongoose.Schema({
     qrCode: {
         type: String,
         default: null
+    },
+
+    analyticsEnabled: {
+        type: Boolean,
+        default: true
     }
 
 }, {

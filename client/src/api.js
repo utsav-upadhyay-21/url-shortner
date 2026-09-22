@@ -29,6 +29,8 @@ export const api = {
     request("/url", { method: "POST", body: { originalUrl }, token }),
   myUrls: (token) => request("/url/my-urls", { token }),
   analytics: (shortCode, token) => request(`/url/${shortCode}/analytics`, { token }),
+  toggleAnalytics: (shortCode, token) =>
+    request(`/url/${shortCode}/analytics`, { method: "PATCH", token }),
   updateUrl: (shortCode, originalUrl, token) =>
     request(`/url/${shortCode}`, { method: "PUT", body: { originalUrl }, token }),
   deleteUrl: (shortCode, token) =>
